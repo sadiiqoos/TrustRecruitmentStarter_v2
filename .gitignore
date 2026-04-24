@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+*.db
+src/TrustRecruitment.Web/App_Data/

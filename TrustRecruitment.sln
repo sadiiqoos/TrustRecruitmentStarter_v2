@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrustRecruitment.Web", "src\TrustRecruitment.Web\TrustRecruitment.Web.csproj", "{9EFCC2D1-095F-47E5-BD3E-CB803E5F82DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrustRecruitment.Business", "src\TrustRecruitment.Business\TrustRecruitment.Business.csproj", "{3EFB8CEC-4D02-444F-BAC8-907986F6DE3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrustRecruitment.Data", "src\TrustRecruitment.Data\TrustRecruitment.Data.csproj", "{78C16F21-BC09-4B44-B110-B4CD9E5A2FA0}"
+EndProject
+Global
+    GlobalSection(SolutionConfigurationPlatforms) = preSolution
+        Debug|Any CPU = Debug|Any CPU
+        Release|Any CPU = Release|Any CPU
+    EndGlobalSection
+    GlobalSection(ProjectConfigurationPlatforms) = postSolution
+        {9EFCC2D1-095F-47E5-BD3E-CB803E5F82DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {9EFCC2D1-095F-47E5-BD3E-CB803E5F82DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {9EFCC2D1-095F-47E5-BD3E-CB803E5F82DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {9EFCC2D1-095F-47E5-BD3E-CB803E5F82DE}.Release|Any CPU.Build.0 = Release|Any CPU
+        {3EFB8CEC-4D02-444F-BAC8-907986F6DE3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {3EFB8CEC-4D02-444F-BAC8-907986F6DE3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {3EFB8CEC-4D02-444F-BAC8-907986F6DE3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {3EFB8CEC-4D02-444F-BAC8-907986F6DE3E}.Release|Any CPU.Build.0 = Release|Any CPU
+        {78C16F21-BC09-4B44-B110-B4CD9E5A2FA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {78C16F21-BC09-4B44-B110-B4CD9E5A2FA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {78C16F21-BC09-4B44-B110-B4CD9E5A2FA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {78C16F21-BC09-4B44-B110-B4CD9E5A2FA0}.Release|Any CPU.Build.0 = Release|Any CPU
+    EndGlobalSection
+EndGlobal

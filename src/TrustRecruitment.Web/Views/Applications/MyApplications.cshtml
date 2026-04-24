@@ -1,0 +1,31 @@
+@model IReadOnlyList<ApplicationDto>
+
+<h2>My applications</h2>
+
+<p>Email: <strong>@ViewBag.Email</strong></p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Job Id</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Country</th>
+            <th>CV</th>
+            <th>Applied</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var application in Model)
+    {
+        <tr>
+            <td>@application.JobId</td>
+            <td>@application.CandidateName</td>
+            <td>@application.CandidateEmail</td>
+            <td>@application.Country</td>
+            <td>@application.CvFileName</td>
+            <td>@application.AppliedUtc.ToString("u")</td>
+        </tr>
+    }
+    </tbody>
+</table>

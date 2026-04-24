@@ -1,0 +1,55 @@
+@model AdminDashboardViewModel
+
+<h2>Admin dashboard</h2>
+
+<p>
+    <a asp-action="CreateJob" class="btn btn-primary">Create new job</a>
+</p>
+
+<div class="row">
+    <div class="col-lg-6">
+        <h4>Jobs</h4>
+        <table class="table table-bordered table-sm">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var job in Model.Jobs)
+            {
+                <tr>
+                    <td>@job.Title</td>
+                    <td>@job.Location, @job.Country</td>
+                    <td>@(job.IsActive ? "Active" : "Inactive")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-lg-6">
+        <h4>Applications</h4>
+        <table class="table table-bordered table-sm">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>CV</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var application in Model.Applications)
+            {
+                <tr>
+                    <td>@application.CandidateName</td>
+                    <td>@application.CandidateEmail</td>
+                    <td>@application.CvFileName</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
