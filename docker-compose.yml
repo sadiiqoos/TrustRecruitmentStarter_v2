@@ -9,7 +9,7 @@ services:
       - "5000:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__MongoDb: mongodb://admin:secret123@mongodb:27017
+      ConnectionStrings__MongoDb: mongodb://admin:secret123@mongodb:27017/?authSource=admin
     depends_on:
       - mongodb
     volumes:

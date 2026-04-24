@@ -1,35 +1,57 @@
 @model TrustRecruitment.Web.Models.Account.SignupViewModel
 
-<h2>Skapa konto</h2>
+@{
+    ViewData["Title"] = "Skapa konto";
+}
 
-<form asp-action="Signup" method="post">
-    @Html.AntiForgeryToken()
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="mb-2 text-center">Skapa konto</h2>
+                <p class="text-muted text-center mb-4">
+                    Registrera dig för att komma igång
+                </p>
 
-    <div asp-validation-summary="All" class="text-danger"></div>
+                <form action="/Account/Signup" method="post">
+                    @Html.AntiForgeryToken()
 
-    <div>
-        <label asp-for="FullName"></label>
-        <input asp-for="FullName" />
-        <span asp-validation-for="FullName" class="text-danger"></span>
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label">Fullständigt namn</label>
+                        <input asp-for="FullName" class="form-control" placeholder="Ahmed Shide" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">E-post</label>
+                        <input asp-for="Email" class="form-control" type="email" placeholder="namn@example.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">Lösenord</label>
+                        <input asp-for="Password" class="form-control" type="password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ConfirmPassword" class="form-label">Bekräfta lösenord</label>
+                        <input asp-for="ConfirmPassword" class="form-control" type="password" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        Skapa konto
+                    </button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <span>Har du redan ett konto?</span>
+                    <a href="/Account/Login">Logga in</a>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div>
-        <label asp-for="Email"></label>
-        <input asp-for="Email" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
-
-    <div>
-        <label asp-for="Password"></label>
-        <input asp-for="Password" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
-
-    <div>
-        <label asp-for="ConfirmPassword"></label>
-        <input asp-for="ConfirmPassword" />
-        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-    </div>
-
-    <button type="submit">Skapa konto</button>
-</form>
+</div>
