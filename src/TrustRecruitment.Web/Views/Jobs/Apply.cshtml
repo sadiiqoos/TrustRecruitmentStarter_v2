@@ -1,0 +1,38 @@
+@model ApplyViewModel
+
+<h2>Apply for @Model.JobTitle</h2>
+
+<form asp-action="Apply" method="post" enctype="multipart/form-data" class="row g-3">
+    <input asp-for="JobId" type="hidden" />
+    <input asp-for="JobTitle" type="hidden" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="col-md-6">
+        <label asp-for="CandidateName" class="form-label"></label>
+        <input asp-for="CandidateName" class="form-control" />
+        <span asp-validation-for="CandidateName" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="CandidateEmail" class="form-label"></label>
+        <input asp-for="CandidateEmail" class="form-control" />
+        <span asp-validation-for="CandidateEmail" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Country" class="form-label"></label>
+        <input asp-for="Country" class="form-control" />
+        <span asp-validation-for="Country" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="CvFile" class="form-label"></label>
+        <input asp-for="CvFile" type="file" class="form-control" />
+        <span asp-validation-for="CvFile" class="text-danger"></span>
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Submit application</button>
+    </div>
+</form>
