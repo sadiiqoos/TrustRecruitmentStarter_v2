@@ -31,6 +31,28 @@ public class JobService : IJobService
         await _jobRepository.AddAsync(entity, cancellationToken);
     }
 
+    public async Task UpdateAsync(Guid id, JobDto job, CancellationToken cancellationToken = default)
+    {
+        var entity = await _jobRepository.GetByIdAsync(id, cancellationToken);
+        if (entity is null)
+            throw new InvalidOperationException("Job not found.");
+
+        entity.Title = job.Title;
+        entity.Department = job.Department;
+        entity.Location = job.Location;
+        entity.Country = job.Country;
+        entity.EmploymentType = job.EmploymentType;
+        entity.Description = job.Description;
+        entity.IsActive = job.IsActive;
+
+        await _jobRepository.UpdateAsync(entity, cancellationToken);
+    }
+
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await _jobRepository.DeleteAsync(id, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<JobDto>> GetActiveAsync(CancellationToken cancellationToken = default)
         => (await _jobRepository.GetActiveAsync(cancellationToken)).Select(Map).ToList();
 

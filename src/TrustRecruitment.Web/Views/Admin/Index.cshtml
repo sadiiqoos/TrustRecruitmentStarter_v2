@@ -1,13 +1,23 @@
+@* Views/Admin/Index.cshtml *@
 @model AdminDashboardViewModel
 
 <h2>Admin dashboard</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
 
 <p>
     <a asp-action="CreateJob" class="btn btn-primary">Create new job</a>
 </p>
 
-<div class="row">
-    <div class="col-lg-6">
+<div class="row mb-4">
+    <div class="col-12">
         <h4>Jobs</h4>
         <table class="table table-bordered table-sm">
             <thead>
@@ -15,6 +25,7 @@
                     <th>Title</th>
                     <th>Location</th>
                     <th>Status</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -24,29 +35,98 @@
                     <td>@job.Title</td>
                     <td>@job.Location, @job.Country</td>
                     <td>@(job.IsActive ? "Active" : "Inactive")</td>
+                    <td>
+                        <a asp-action="EditJob" asp-route-id="@job.Id" class="btn btn-sm btn-warning">Edit</a>
+                        <a asp-action="ViewApplications" asp-route-jobId="@job.Id" class="btn btn-sm btn-info">Applications</a>
+                        <form asp-action="DeleteJob" asp-route-id="@job.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Delete this job?')">Delete</button>
+                        </form>
+                    </td>
                 </tr>
             }
             </tbody>
         </table>
     </div>
+</div>
 
-    <div class="col-lg-6">
+<div class="row mb-4">
+    <div class="col-12">
         <h4>Applications</h4>
         <table class="table table-bordered table-sm">
             <thead>
                 <tr>
                     <th>Name</th>
                     <th>Email</th>
+                    <th>Country</th>
                     <th>CV</th>
+                    <th>Applied</th>
                 </tr>
             </thead>
             <tbody>
-            @foreach (var application in Model.Applications)
+            @foreach (var app in Model.Applications)
             {
                 <tr>
-                    <td>@application.CandidateName</td>
-                    <td>@application.CandidateEmail</td>
-                    <td>@application.CvFileName</td>
+                    <td>@app.CandidateName</td>
+                    <td>@app.CandidateEmail</td>
+                    <td>@app.Country</td>
+                    <td>@app.CvFileName</td>
+                    <td>@app.AppliedUtc.ToString("yyyy-MM-dd")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <h4>Registered users</h4>
+        <table class="table table-bordered table-sm">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                    <td>@user.FullName</td>
+                    <td>@user.Email</td>
+                    <td>@user.Role</td>
+                    <td>
+                        <a asp-action="ChangePassword" asp-route-id="@user.Id" class="btn btn-sm btn-warning">Ändra lösenord</a>
+
+                        @if (user.Role == "Admin")
+                        {
+                            <form asp-action="ChangeRole" asp-route-id="@user.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="role" value="User" />
+                                <button type="submit" class="btn btn-sm btn-secondary"
+                                        onclick="return confirm('Ta bort admin-rollen?')">Ta bort Admin</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-action="ChangeRole" asp-route-id="@user.Id" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="role" value="Admin" />
+                                <button type="submit" class="btn btn-sm btn-success"
+                                        onclick="return confirm('Ge admin-roll?')">Gör Admin</button>
+                            </form>
+                        }
+
+                        <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Ta bort användaren?')">Ta bort</button>
+                        </form>
+                    </td>
                 </tr>
             }
             </tbody>

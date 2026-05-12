@@ -1,9 +1,12 @@
+// JobEditorViewModel.cs
 using System.ComponentModel.DataAnnotations;
 
 namespace TrustRecruitment.Web.ViewModels;
 
 public class JobEditorViewModel
 {
+    public Guid Id { get; set; }
+
     [Required]
     public string Title { get; set; } = string.Empty;
 

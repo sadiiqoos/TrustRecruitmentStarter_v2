@@ -17,42 +17,41 @@ public class MongoUserRepository : IUserRepository
         _users = database.GetCollection<ApplicationUser>(settings.Value.UsersCollectionName);
     }
 
+    public async Task<IReadOnlyList<ApplicationUser>> GetAllAsync(CancellationToken cancellationToken = default)
+        => await _users.Find(_ => true).ToListAsync(cancellationToken);
+
     public async Task<ApplicationUser?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         email = NormalizeEmail(email);
-
-        return await _users
-            .Find(user => user.Email == email)
-            .FirstOrDefaultAsync(cancellationToken);
+        return await _users.Find(u => u.Email == email).FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task<ApplicationUser?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _users
-            .Find(user => user.Id == id)
-            .FirstOrDefaultAsync(cancellationToken);
-    }
+        => await _users.Find(u => u.Id == id).FirstOrDefaultAsync(cancellationToken);
 
     public async Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         email = NormalizeEmail(email);
-
-        var count = await _users.CountDocumentsAsync(
-            user => user.Email == email,
-            cancellationToken: cancellationToken);
-
+        var count = await _users.CountDocumentsAsync(u => u.Email == email, cancellationToken: cancellationToken);
         return count > 0;
     }
 
     public async Task AddAsync(ApplicationUser user, CancellationToken cancellationToken = default)
     {
         user.Email = NormalizeEmail(user.Email);
-
         await _users.InsertOneAsync(user, cancellationToken: cancellationToken);
     }
 
-    private static string NormalizeEmail(string email)
+    public async Task UpdateAsync(ApplicationUser user, CancellationToken cancellationToken = default)
     {
-        return (email ?? string.Empty).Trim().ToLowerInvariant();
+        await _users.ReplaceOneAsync(u => u.Id == user.Id, user, cancellationToken: cancellationToken);
     }
+
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await _users.DeleteOneAsync(u => u.Id == id, cancellationToken);
+    }
+
+    private static string NormalizeEmail(string email)
+        => (email ?? string.Empty).Trim().ToLowerInvariant();
 }

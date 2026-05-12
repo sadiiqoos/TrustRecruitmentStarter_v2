@@ -6,4 +6,5 @@ public class AdminDashboardViewModel
 {
     public IReadOnlyList<JobDto> Jobs { get; set; } = [];
     public IReadOnlyList<ApplicationDto> Applications { get; set; } = [];
+    public IReadOnlyList<UserDto> Users { get; set; } = [];
 }

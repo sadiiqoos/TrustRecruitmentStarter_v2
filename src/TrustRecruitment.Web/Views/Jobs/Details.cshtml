@@ -1,3 +1,4 @@
+@* Views/Jobs/Details.cshtml *@
 @model JobDto
 
 <h2>@Model.Title</h2>
@@ -8,6 +9,6 @@
         <p><strong>Location:</strong> @Model.Location, @Model.Country</p>
         <p><strong>Employment type:</strong> @Model.EmploymentType</p>
         <p>@Model.Description</p>
-        <a asp-controller="Applications" asp-action="Apply" asp-route-jobId="@Model.Id" class="btn btn-primary">Apply now</a>
+        <a asp-controller="Jobs" asp-action="Apply" asp-route-id="@Model.Id" class="btn btn-primary">Apply now</a>
     </div>
 </div>

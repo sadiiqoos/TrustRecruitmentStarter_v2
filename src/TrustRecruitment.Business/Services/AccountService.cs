@@ -16,37 +16,59 @@ public class AccountService : IAccountService
         _userRepository = userRepository;
     }
 
+    public async Task CreateAdminIfNotExistsAsync(string email, string password)
+    {
+        email = NormalizeEmail(email);
+
+        var existing = await _userRepository.GetByEmailAsync(email);
+        if (existing != null) return;
+
+        var admin = new ApplicationUser
+        {
+            FullName = "Administrator",
+            Email = email,
+            Role = "Admin"
+        };
+
+        admin.PasswordHash = _passwordHasher.HashPassword(admin, password);
+        await _userRepository.AddAsync(admin);
+    }
+
+    public async Task<AccountResult> ChangePasswordAsync(Guid userId, string newPassword)
+    {
+        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 8)
+            return Failed("Lösenordet måste vara minst 8 tecken långt.");
+
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user is null)
+            return Failed("Användaren hittades inte.");
+
+        user.PasswordHash = _passwordHasher.HashPassword(user, newPassword);
+        await _userRepository.UpdateAsync(user);
+
+        return Succeeded();
+    }
+
     public async Task<AccountResult> SignupAsync(string fullName, string email, string password)
     {
         fullName = fullName?.Trim() ?? string.Empty;
         email = NormalizeEmail(email);
 
         if (string.IsNullOrWhiteSpace(fullName))
-        {
             return Failed("Fullständigt namn måste anges.");
-        }
 
         if (string.IsNullOrWhiteSpace(email))
-        {
             return Failed("E-post måste anges.");
-        }
 
         if (string.IsNullOrWhiteSpace(password))
-        {
             return Failed("Lösenord måste anges.");
-        }
 
         if (password.Length < 8)
-        {
             return Failed("Lösenordet måste vara minst 8 tecken långt.");
-        }
 
         var existingUser = await _userRepository.GetByEmailAsync(email);
-
         if (existingUser != null)
-        {
             return Failed("E-postadressen används redan.");
-        }
 
         var user = new ApplicationUser
         {
@@ -56,7 +78,6 @@ public class AccountService : IAccountService
         };
 
         user.PasswordHash = _passwordHasher.HashPassword(user, password);
-
         await _userRepository.AddAsync(user);
 
         return Succeeded();
@@ -67,23 +88,15 @@ public class AccountService : IAccountService
         email = NormalizeEmail(email);
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-        {
             return Failed("Fel e-post eller lösenord.");
-        }
 
         var user = await _userRepository.GetByEmailAsync(email);
-
         if (user == null)
-        {
             return Failed("Fel e-post eller lösenord.");
-        }
 
         var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
-
         if (result == PasswordVerificationResult.Failed)
-        {
             return Failed("Fel e-post eller lösenord.");
-        }
 
         return Succeeded();
     }
@@ -94,24 +107,11 @@ public class AccountService : IAccountService
     }
 
     private static string NormalizeEmail(string email)
-    {
-        return (email ?? string.Empty).Trim().ToLowerInvariant();
-    }
+        => (email ?? string.Empty).Trim().ToLowerInvariant();
 
     private static AccountResult Succeeded()
-    {
-        return new AccountResult
-        {
-            Succeeded = true
-        };
-    }
+        => new() { Succeeded = true };
 
     private static AccountResult Failed(params string[] errors)
-    {
-        return new AccountResult
-        {
-            Succeeded = false,
-            Errors = errors.ToList()
-        };
-    }
+        => new() { Succeeded = false, Errors = errors.ToList() };
 }

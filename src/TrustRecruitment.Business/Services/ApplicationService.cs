@@ -1,3 +1,4 @@
+// ApplicationService.cs
 using TrustRecruitment.Business.DTOs;
 using TrustRecruitment.Business.Interfaces;
 using TrustRecruitment.Data.Entities;
@@ -22,19 +23,16 @@ public class ApplicationService : IApplicationService
         _fileStorageRepository = fileStorageRepository;
     }
 
+    // Används av ApplicationsController (med filuppladdning)
     public async Task<Guid> CreateAsync(CreateApplicationDto dto, CancellationToken cancellationToken = default)
     {
         var job = await _jobRepository.GetByIdAsync(dto.JobId, cancellationToken);
         if (job is null || !job.IsActive)
-        {
             throw new InvalidOperationException("The selected job does not exist or is not active.");
-        }
 
         var alreadyApplied = await _applicationRepository.ExistsAsync(dto.CandidateUserId, dto.JobId, cancellationToken);
         if (alreadyApplied)
-        {
             throw new InvalidOperationException("This candidate has already applied for the selected job.");
-        }
 
         var storagePath = await _fileStorageRepository.SaveAsync(dto.CvContent, dto.CvFileName, cancellationToken);
 
@@ -54,8 +52,37 @@ public class ApplicationService : IApplicationService
         return application.Id;
     }
 
+    // Används av JobsController (utan filuppladdning)
+    public async Task<Guid> CreateAsync(ApplicationDto dto, CancellationToken cancellationToken = default)
+    {
+        var job = await _jobRepository.GetByIdAsync(dto.JobId, cancellationToken);
+        if (job is null || !job.IsActive)
+            throw new InvalidOperationException("The selected job does not exist or is not active.");
+
+        var application = new JobApplication
+        {
+            JobId = dto.JobId,
+            CandidateUserId = dto.CandidateEmail.ToLowerInvariant(),
+            CandidateName = dto.CandidateName,
+            CandidateEmail = dto.CandidateEmail,
+            Country = dto.Country,
+            CvFileName = dto.CvFileName,
+            CvStoragePath = string.Empty,
+            AppliedUtc = DateTime.UtcNow
+        };
+
+        await _applicationRepository.AddAsync(application, cancellationToken);
+        return application.Id;
+    }
+
     public async Task<IReadOnlyList<ApplicationDto>> GetAllAsync(CancellationToken cancellationToken = default)
         => (await _applicationRepository.GetAllAsync(cancellationToken)).Select(Map).ToList();
+
+    public async Task<IReadOnlyList<ApplicationDto>> GetByJobIdAsync(Guid jobId, CancellationToken cancellationToken = default)
+        => (await _applicationRepository.GetAllAsync(cancellationToken))
+            .Where(a => a.JobId == jobId)
+            .Select(Map)
+            .ToList();
 
     public async Task<IReadOnlyList<ApplicationDto>> GetByCandidateAsync(string candidateUserId, CancellationToken cancellationToken = default)
         => (await _applicationRepository.GetByCandidateAsync(candidateUserId, cancellationToken)).Select(Map).ToList();

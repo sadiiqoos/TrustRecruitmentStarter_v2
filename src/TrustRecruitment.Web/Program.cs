@@ -38,7 +38,11 @@ builder.Services
         options.LoginPath = "/Account/Login";
         options.AccessDeniedPath = "/Account/Login";
         options.Cookie.Name = "TrustRecruitment.Auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Strict;
         options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
     });
 
 builder.Services.AddAuthorization();
@@ -67,8 +71,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 app.UseRouting();
 
@@ -80,5 +82,23 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllers();
+
+// Seed admin-användare vid uppstart
+using (var scope = app.Services.CreateScope())
+{
+    var accountService = scope.ServiceProvider.GetRequiredService<IAccountService>();
+    var adminEmail = builder.Configuration["AdminSeed:Email"] ?? "admin@trustrecruitment.com";
+    var adminPassword = builder.Configuration["AdminSeed:Password"] ?? "Admin123!";
+
+    try
+    {
+        await accountService.CreateAdminIfNotExistsAsync(adminEmail, adminPassword);
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Failed to seed admin user");
+    }
+}
 
 app.Run();
