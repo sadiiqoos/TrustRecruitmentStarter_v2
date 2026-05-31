@@ -12,13 +12,16 @@ public class AccountController : Controller
 {
     private readonly IAccountService _accountService;
     private readonly IUserRepository _userRepository;
+    private readonly ILogger<AccountController> _logger;
 
     public AccountController(
         IAccountService accountService,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        ILogger<AccountController> logger)
     {
         _accountService = accountService;
         _userRepository = userRepository;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -39,17 +42,16 @@ public class AccountController : Controller
 
         var normalizedEmail = NormalizeEmail(model.Email);
 
-        Console.WriteLine($"[Login] Attempt for: {normalizedEmail}");
+        // Loggar INTE lösenordet — bara e-postadressen
+        _logger.LogInformation("Login attempt. Email={Email}", normalizedEmail);
 
-        var result = await _accountService.LoginAsync(
-            normalizedEmail,
-            model.Password
-        );
-
-        Console.WriteLine($"[Login] AccountService result: {result.Succeeded}");
+        var result = await _accountService.LoginAsync(normalizedEmail, model.Password);
 
         if (!result.Succeeded)
         {
+            _logger.LogWarning("Login failed. Email={Email}, Errors={Errors}",
+                normalizedEmail, string.Join(", ", result.Errors));
+
             foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error);
 
@@ -58,26 +60,16 @@ public class AccountController : Controller
 
         var user = await _userRepository.GetByEmailAsync(normalizedEmail);
 
-        Console.WriteLine(user == null
-            ? "[Login] User not found after successful password verification."
-            : $"[Login] User found: {user.Email}");
-
         if (user == null)
         {
+            _logger.LogError("User not found after successful password verification. Email={Email}", normalizedEmail);
             ModelState.AddModelError(string.Empty, "Kunde inte hitta användaren.");
             return View(model);
         }
 
-        Console.WriteLine("[Login] Creating auth cookie...");
+        await SignInUserAsync(user.Id.ToString(), user.FullName, user.Email, user.Role, isPersistent: true);
 
-        await SignInUserAsync(
-            user.Id.ToString(),
-            user.FullName,
-            user.Email,
-            user.Role,
-            isPersistent: true);
-
-        Console.WriteLine("[Login] Cookie created. Redirecting to Home/Index.");
+        _logger.LogInformation("Login successful. UserId={UserId}, Role={Role}", user.Id, user.Role);
 
         return RedirectToAction("Index", "Home");
     }
@@ -100,17 +92,15 @@ public class AccountController : Controller
 
         var normalizedEmail = NormalizeEmail(model.Email);
 
-        Console.WriteLine($"[Signup] Attempt for: {normalizedEmail}");
+        _logger.LogInformation("Signup attempt. Email={Email}", normalizedEmail);
 
-        var result = await _accountService.SignupAsync(
-            model.FullName.Trim(),
-            normalizedEmail,
-            model.Password);
-
-        Console.WriteLine($"[Signup] AccountService result: {result.Succeeded}");
+        var result = await _accountService.SignupAsync(model.FullName.Trim(), normalizedEmail, model.Password);
 
         if (!result.Succeeded)
         {
+            _logger.LogWarning("Signup failed. Email={Email}, Errors={Errors}",
+                normalizedEmail, string.Join(", ", result.Errors));
+
             foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error);
 
@@ -119,26 +109,16 @@ public class AccountController : Controller
 
         var user = await _userRepository.GetByEmailAsync(normalizedEmail);
 
-        Console.WriteLine(user == null
-            ? "[Signup] Created user not found afterwards."
-            : $"[Signup] Created user found: {user.Email}");
-
         if (user == null)
         {
+            _logger.LogError("Created user not found afterwards. Email={Email}", normalizedEmail);
             ModelState.AddModelError(string.Empty, "Kunde inte hitta den skapade användaren.");
             return View(model);
         }
 
-        Console.WriteLine("[Signup] Creating auth cookie...");
+        await SignInUserAsync(user.Id.ToString(), user.FullName, user.Email, user.Role, isPersistent: true);
 
-        await SignInUserAsync(
-            user.Id.ToString(),
-            user.FullName,
-            user.Email,
-            user.Role,
-            isPersistent: true);
-
-        Console.WriteLine("[Signup] Cookie created. Redirecting to Home/Index.");
+        _logger.LogInformation("Signup successful. UserId={UserId}", user.Id);
 
         return RedirectToAction("Index", "Home");
     }
@@ -147,17 +127,14 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        Console.WriteLine("[Logout] Signing out user.");
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        _logger.LogInformation("User logged out. UserId={UserId}", userId);
+
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("Index", "Home");
     }
 
-    private async Task SignInUserAsync(
-        string userId,
-        string fullName,
-        string email,
-        string role,
-        bool isPersistent)
+    private async Task SignInUserAsync(string userId, string fullName, string email, string role, bool isPersistent)
     {
         var claims = new List<Claim>
         {
@@ -167,25 +144,13 @@ public class AccountController : Controller
             new Claim(ClaimTypes.Role, role)
         };
 
-        var identity = new ClaimsIdentity(
-            claims,
-            CookieAuthenticationDefaults.AuthenticationScheme);
-
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
+        var authProperties = new AuthenticationProperties { IsPersistent = isPersistent };
 
-        var authProperties = new AuthenticationProperties
-        {
-            IsPersistent = isPersistent
-        };
-
-        await HttpContext.SignInAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            principal,
-            authProperties);
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
     }
 
     private static string NormalizeEmail(string email)
-    {
-        return (email ?? string.Empty).Trim().ToLowerInvariant();
-    }
+        => (email ?? string.Empty).Trim().ToLowerInvariant();
 }

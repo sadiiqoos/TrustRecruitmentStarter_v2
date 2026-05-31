@@ -6,3 +6,12 @@ obj/
 *.suo
 *.db
 src/TrustRecruitment.Web/App_Data/
+
+# Hemligheter — ska aldrig versionshanteras
+.env
+*.env
+appsettings.*.local.json
+secrets.json
+
+# Publiced output
+publish/

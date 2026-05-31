@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using TrustRecruitment.Business.DTOs;
 using TrustRecruitment.Business.Interfaces;
 using TrustRecruitment.Data.Entities;
@@ -8,14 +9,18 @@ namespace TrustRecruitment.Business.Services;
 public class JobService : IJobService
 {
     private readonly IJobRepository _jobRepository;
+    private readonly ILogger<JobService> _logger;
 
-    public JobService(IJobRepository jobRepository)
+    public JobService(IJobRepository jobRepository, ILogger<JobService> logger)
     {
         _jobRepository = jobRepository;
+        _logger = logger;
     }
 
     public async Task CreateAsync(JobDto job, CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Creating job. Title={Title}, Department={Department}", job.Title, job.Department);
+
         var entity = new Job
         {
             Id = job.Id == Guid.Empty ? Guid.NewGuid() : job.Id,
@@ -29,13 +34,20 @@ public class JobService : IJobService
         };
 
         await _jobRepository.AddAsync(entity, cancellationToken);
+
+        _logger.LogInformation("Job created successfully. JobId={JobId}, Title={Title}", entity.Id, entity.Title);
     }
 
     public async Task UpdateAsync(Guid id, JobDto job, CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Updating job. JobId={JobId}", id);
+
         var entity = await _jobRepository.GetByIdAsync(id, cancellationToken);
         if (entity is null)
+        {
+            _logger.LogWarning("Update failed — job not found. JobId={JobId}", id);
             throw new InvalidOperationException("Job not found.");
+        }
 
         entity.Title = job.Title;
         entity.Department = job.Department;
@@ -46,11 +58,15 @@ public class JobService : IJobService
         entity.IsActive = job.IsActive;
 
         await _jobRepository.UpdateAsync(entity, cancellationToken);
+
+        _logger.LogInformation("Job updated successfully. JobId={JobId}, Title={Title}", id, entity.Title);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Deleting job. JobId={JobId}", id);
         await _jobRepository.DeleteAsync(id, cancellationToken);
+        _logger.LogInformation("Job deleted. JobId={JobId}", id);
     }
 
     public async Task<IReadOnlyList<JobDto>> GetActiveAsync(CancellationToken cancellationToken = default)
